@@ -86,6 +86,22 @@ def get_unary_features(df, high_threshold=0.8):
     return unary_feats
 
 
+def get_likely_nominal_ordinal_features(df, low_threshold=50):
+    #To Do: Make this whole function smarter
+
+    nominal_ordinal_feats = []
+
+    numeric_features = get_numeric_features(df)
+
+    for feature in numeric_features:
+        num_levels = len(df[feature].unique())
+
+        if num_levels <= low_threshold:
+            nominal_ordinal_feats.append(feature)
+
+    return nominal_ordinal_feats
+
+
 def get_diagnostic_summary(df):
 
     total_feat_count = get_feature_count(df)
@@ -110,11 +126,15 @@ def get_diagnostic_summary(df):
     unary_feats = get_unary_features(df)
     num_unary_feats = len(unary_feats)
 
+    nominal_ordinal_feats = get_likely_nominal_ordinal_features(df)
+    num_nom_ord_feats = len(nominal_ordinal_feats)
+
     summary_text = """
                      Data Diagnostic Summary
         ================================================
         Total Feature Count: {0}
             Numeric Features: {1}
+                Likely Nominal or Ordinal Features: {8}
             Character Features: {2}
                 High-Cardinality Features: {5}
             Features w/ High Rate of Missing Values: {6}
@@ -125,7 +145,7 @@ def get_diagnostic_summary(df):
         ================================================
         """.format(total_feat_count, num_feat_count, char_feat_count, 
         total_record_count, null_record_count, num_high_card_feats,
-        num_mostly_null_feats, num_unary_feats)
+        num_mostly_null_feats, num_unary_feats, num_nom_ord_feats)
 
     print(summary_text)
 
@@ -136,7 +156,8 @@ def get_diagnostic_summary(df):
             "character_features": char_feats,
             "high_cardinality_features": high_card_feats,
             "mostly_null_features": mostly_null_feats,
-            "unary_features": unary_feats
+            "unary_features": unary_feats,
+            "likely_nominal_or_ordinal_features": nominal_ordinal_feats
         },
         "record_diagnostics": {
             "total_record_count": total_record_count,
