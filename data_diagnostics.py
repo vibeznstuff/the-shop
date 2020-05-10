@@ -29,25 +29,33 @@ def get_records_with_nulls(df):
 def get_missing_count_from_feature(series):
     return series.isnull().sum()
 
+def get_feature_cardinality(df, feature_list=None):
+
+    if feature_list == None:
+        feature_list = df.columns
+        
+    card_list = []
+
+    for feature in feature_list:
+        cardinality = len(df[feature].unique())
+        card_list.append((feature, cardinality))
+
+    return card_list
 
 def get_high_card_features(df, high_threshold=-1):
     
     high_card_feats = []
 
-    # To Do: Make this a little smarter
     if high_threshold == -1:
         record_count = get_record_count(df)
-        if record_count < 10000:
-            high_threshold = record_count / 2
-        elif record_count >= 10000:
-            high_threshold = 10000
+        high_threshold = record_count * (0.70)
 
     char_features = get_character_features(df)
+    feat_cards = get_feature_cardinality(df, char_features)
 
-    for feature in char_features:
-        num_levels = len(df[feature].unique())
-        if num_levels > high_threshold:
-            high_card_feats.append(feature)
+    for feature in feat_cards:
+        if feature[1] > high_threshold:
+            high_card_feats.append(feature[0])
 
     return high_card_feats
 
@@ -100,6 +108,18 @@ def get_likely_nominal_ordinal_features(df, low_threshold=50):
             nominal_ordinal_feats.append(feature)
 
     return nominal_ordinal_feats
+
+
+def get_clean_features(df, feature_list):
+    high_card_feats = get_high_card_features(df)
+    mostly_null_feats = get_mostly_null_features(df)
+    unary_feats = get_unary_features(df)
+
+    feature_list = [x for x in feature_list if x not in high_card_feats]
+    feature_list = [x for x in feature_list if x not in mostly_null_feats]
+    feature_list = [x for x in feature_list if x not in unary_feats]
+
+    return feature_list
 
 
 def get_diagnostic_summary(df):
