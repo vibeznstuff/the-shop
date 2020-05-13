@@ -86,10 +86,11 @@ def get_unary_features(df, high_threshold=0.8):
 
     for feature in features:
         top_levels = df[feature].value_counts(normalize=True).head()
-        top_level_prevalence = top_levels.iloc[0]
 
-        if top_level_prevalence >= high_threshold:
-            unary_feats.append((feature, top_levels))
+        if len(top_levels) != 0:
+            top_level_prevalence = top_levels.iloc[0]
+            if top_level_prevalence >= high_threshold:
+                unary_feats.append((feature, top_levels))
 
     return unary_feats
 
